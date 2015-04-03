@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"net/url"
@@ -14,7 +16,7 @@ func main() {
 	flag.Parse()
 	c := contextio.NewContextIO(*key, *secret)
 	params := url.Values{}
-	params.Set("limit", "5")
+	params.Set("include_body", "1")
 	eid := "<comments/267458040/created@basecamp.com>"
 	q := `/2.0/accounts/551420ac615a99de12fee488/messages/` + url.QueryEscape(eid)
 	up, _ := url.Parse(q)
@@ -24,5 +26,9 @@ func main() {
 	if err != nil {
 		fmt.Println("ERROR:", err)
 	}
-	fmt.Println(string(j))
+	//fmt.Println(string(j))
+	var out bytes.Buffer
+	json.Indent(&out, j, "", "  ")
+	fmt.Println(out.String())
+
 }

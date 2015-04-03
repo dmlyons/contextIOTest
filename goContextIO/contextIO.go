@@ -128,9 +128,10 @@ func (c *ContextIO) Do(method, q string, params url.Values, body io.Reader) (res
 		Method: method,
 		Host:   apiHost, // takes precendence over URL.Host
 		URL: &url.URL{
-			Host:   apiHost,
-			Scheme: "https",
-			Opaque: q,
+			Host:     apiHost,
+			Scheme:   "https",
+			Opaque:   q,
+			RawQuery: params.Encode(),
 		},
 		Header: http.Header{
 			"User-Agent": {"GoContextIO Simple library"},
