@@ -113,20 +113,15 @@ func NewContextIO(key, secret string) *ContextIO {
 }
 
 const (
-	apiUrl  = `https://api.context.io/`
 	apiHost = `api.context.io`
 )
 
 // returns an *http.Response, the body must be defer response.Body.close()
 func (c *ContextIO) Do(method, q string, params url.Values, body io.Reader) (response *http.Response, err error) {
-	//	urlStr := apiUrl + u //+ `?` + params.Encode()
-	//	fmt.Print("urlStr ")
-	//	fmt.Println(urlStr)
-	//	req, err := http.NewRequest(method, urlStr, body)
-	//req.URL.Opaque = "//" + u //+ `?` + params.Encode()
+	// Cannot use http.NewRequest because of the possibility of encoded data in the url
 	req := &http.Request{
 		Method: method,
-		Host:   apiHost, // takes precendence over URL.Host
+		Host:   apiHost, // takes precendence over Request.URL.Host
 		URL: &url.URL{
 			Host:     apiHost,
 			Scheme:   "https",
