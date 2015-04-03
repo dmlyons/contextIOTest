@@ -113,40 +113,50 @@ func NewContextIO(key, secret string) *ContextIO {
 }
 
 const (
-	host   = "api.context.io"
-	scheme = "https"
+	apiUrl  = `https://api.context.io/`
+	apiHost = `api.context.io`
 )
 
 // returns an *http.Response, the body must be defer response.Body.close()
-func (c *ContextIO) Do(method, u string, params url.Values, body io.Reader) (response *http.Response, err error) {
-	//	urlStr := url + `?` + params.Encode()
+func (c *ContextIO) Do(method, q string, params url.Values, body io.Reader) (response *http.Response, err error) {
+	//	urlStr := apiUrl + u //+ `?` + params.Encode()
+	//	fmt.Print("urlStr ")
 	//	fmt.Println(urlStr)
-	req, err := http.NewRequest(method, "", body)
+	//	req, err := http.NewRequest(method, urlStr, body)
+	//req.URL.Opaque = "//" + u //+ `?` + params.Encode()
+	req := &http.Request{
+		Method: method,
+		Host:   apiHost, // takes precendence over URL.Host
+		URL: &url.URL{
+			Host:   apiHost,
+			Scheme: "https",
+			Opaque: q,
+		},
+		Header: http.Header{
+			"User-Agent": {"GoContextIO Simple library"},
+		},
+	}
+
+	fmt.Print("req.URL ")
+	fmt.Println(req.URL)
+	fmt.Print("req.URL.Opaque ")
+	fmt.Println(req.URL.Opaque)
 	if err != nil {
 		return
 	}
-	// need to do my own url parsing because we want %2f left unmolested
-	req.URL = &url.URL{
-		Host:   host,
-		Scheme: scheme,
-		Opaque: "//" + host + u,
-	}
-	req.URL.RawQuery = params.Encode()
 	err = c.client.SetAuthorizationHeader(req.Header, nil, req.Method, req.URL, nil)
-	fmt.Println("H:", req.Header)
+	fmt.Println("HL:", req.Header)
 	if err != nil {
 		return
 	}
-	fmt.Println("REQ URL:", req.URL)
-	fmt.Println("iREQ URL:", req.URL.Path)
-	fmt.Println("iREQ URL:", req.URL.Opaque)
 	return http.DefaultClient.Do(req)
 }
 
-func (c *ContextIO) DoJson(method, url string, params url.Values, body io.Reader) (j []byte, err error) {
-	response, err := c.Do(method, url, params, body)
+func (c *ContextIO) DoJson(method, u string, params url.Values, body io.Reader) (j []byte, err error) {
+	response, err := c.Do(method, u, params, body)
 	defer response.Body.Close()
 	j, err = ioutil.ReadAll(response.Body)
+	//	json = string(bytes)
 	return j, err
 }
 
